@@ -17,3 +17,7 @@ settings_local.py
 
 ### OS specific ###
 .DS_Store
+config.py
+test.py
+README.md
+2.2-databases-2/orm_migrations/README.md

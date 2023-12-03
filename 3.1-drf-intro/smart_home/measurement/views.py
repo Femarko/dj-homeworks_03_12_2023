@@ -1,6 +1,6 @@
 # TODO: опишите необходимые обработчики, рекомендуется использовать generics APIView классы:
-# TODO: ListCreateAPIView, RetrieveUpdateAPIView, CreateAPIView
-from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
+# TODO: ListCreateSensor, RetrieveUpdateSensor, CreateMeasurement
+from rest_framework.generics import RetrieveUpdateAPIView, ListCreateAPIView, CreateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -8,7 +8,7 @@ from .models import Sensor, Measurement
 from .serializers import SensorSerializer, MeasurementSerializer, SensorDetailSerializer
 
 
-class ListCreateAPIView(ListAPIView):
+class ListCreateSensor(ListCreateAPIView): # получение датчиков, создание датчика
     queryset = Sensor.objects.all()
     serializer_class = SensorSerializer
 
@@ -18,7 +18,7 @@ class ListCreateAPIView(ListAPIView):
         serialized_entry = SensorSerializer(entry)
         return Response(serialized_entry.data)
 
-class RetrieveUpdateAPIView(RetrieveUpdateAPIView):
+class RetrieveUpdateSensor(RetrieveUpdateAPIView): # получение информации по датчику, обновление датчика
     queryset = Sensor.objects.all()
     serializer_class = SensorSerializer
 
@@ -32,19 +32,15 @@ class RetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
     def get(self, request, pk): # получение информации по датчику
         serialized_entry = SensorDetailSerializer(Sensor.objects.get(pk=pk))
-        print(Sensor.objects.get(pk=pk))
-        print(serialized_entry.data)
         return Response(serialized_entry.data)
 
 
-class CreateAPIView(APIView):
-    def get(self, request):
-        return Response({'status': 'OK'})
+class CreateMeasurement(CreateAPIView): # добавление измерения: работает при отправке POST-запроса
+    # через форму Raw data. В HTML form нет строки для ввода ID датчика - почему так?
+    queryset = Measurement.objects.all()
+    serializer_class = MeasurementSerializer
     def post(self, request):
-        sensor = Sensor.objects.get(pk=request.data.get('sensor')) # так работает
-        # а так:
-        # sensor = Sensor.objects.get(pk=request.data.get('sensor')).id #- возвращается ошибка
-        # "Cannot assign "1": "Measurement.sensor_id" must be a "Sensor" instance".
+        sensor = request.data.get('sensor')
         entry = Measurement(sensor_id=sensor, temperature=request.data.get('temperature'))
         entry.save()
         serialized_entry = MeasurementSerializer(entry)
